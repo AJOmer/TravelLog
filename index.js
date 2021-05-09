@@ -18,6 +18,7 @@ app.use(express.json({ extended: false }));
 
 // Routes
 app.use('/api/pins', require('./routes/Pins'));
+app.use('/api/users', require('./routes/Users'));
 
 const PORT = process.env.PORT || 3500;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
