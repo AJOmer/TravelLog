@@ -3,10 +3,14 @@ import ReactMapGL, {Marker, Popup} from "react-map-gl";
 import { Room, Star } from "@material-ui/icons";
 import "./App.css";
 import axios from "axios";
+import {format} from "timeago.js";
 
 
 function App() {
+  const currUser = "Jaydee"
   const [pins, setPins] = useState([]);
+  const [currentPlaceId, setCurrentPlaceId] = useState(null);
+  const [newPlace, setNewPlace] = useState(null);
   const [viewport, setViewport] = useState({
     width: "95vw",
     height: "95vh",
@@ -28,8 +32,20 @@ function App() {
     getPins();
   }, [])
 
+  const handleMarkerClick = (id, lat, long) => {
+    setCurrentPlaceId(id);
+    setViewport({...viewport, latitude: lat, longitude: long})
+  }
+
+  const handleAddClick = (e) => {
+    const [long, lat] = e.lngLat;
+    setNewPlace({
+      lat: lat, long: long
+    });
+  }
+
   return (
-    <ReactMapGL
+    <ReactMapGL transitionDuration="200" onDblClick = {handleAddClick}
       {...viewport}
       mapStyle= "mapbox://styles/ahmedjomer/ckop6c3cr22uh17p56r6n5xff"
       mapboxApiAccessToken={process.env.REACT_APP_MAPBOX}
@@ -37,15 +53,16 @@ function App() {
         {pins.map((p) => (
     <>
         <Marker latitude={p.latitude} longitude={p.longitude} offsetLeft={-20} offsetTop={-10}>
-          <Room style ={{fontSize:viewport.zoom * 4, color: "black"}}/>
+          <Room onClick={() => handleMarkerClick(p._id, p.lat, p.long)} style ={{fontSize:viewport.zoom * 7, color: p.userName === currUser ? "black" : "orange", cursor: "pointer"}}/>
         </Marker>
-        
+        {p._id === currentPlaceId && (
         <Popup
               latitude={p.latitude}
-              longitude={p.latitude}
+              longitude={p.longitude}
               closeButton={true}
               closeOnClick={false}
-              anchor="left" >
+              onClose={() => setCurrentPlaceId(null)}
+              anchor="bottom" >
               <div className="card">
                 <label>Place</label>
                 <h4 className="place-name">{p.title}</h4>
@@ -61,11 +78,39 @@ function App() {
                 </div>
                 <label>Information</label>
                 <span className="username">Created by <b>{p.userName}</b></span>
-                <span className="date">Created an hour ago</span>
+                <span className="date">{format(p.createdAt)}</span>
               </div>
             </Popup>
+          )}
         </>
         ))}
+        {newPlace && (
+      <Popup
+        latitude={newPlace.lat}
+        longitude={newPlace.long}
+        closeButton={true}
+        closeOnClick={false}
+        onClose={() => setNewPlace(null)}
+        anchor="left" >
+          <div>
+            <form>
+              <label>Title</label>
+              <input placeholder="Enter Name"/>
+              <label>Review</label>
+              <textarea placeholder="Review this location"/>
+              <label>Rating</label>
+              <select>
+                <option value ="1">1</option>
+                <option value ="2">2</option>
+                <option value ="3">3</option>
+                <option value ="4">4</option>
+                <option value ="5">5</option>
+              </select>
+              <button className="submitButtonPin" type="submit">Pin it!</button>
+            </form>
+          </div>
+      </Popup>
+        )}
     </ReactMapGL>
     
   );
