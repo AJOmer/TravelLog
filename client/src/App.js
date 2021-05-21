@@ -7,7 +7,7 @@ import {format} from "timeago.js";
 
 
 function App() {
-  const currUser = "Jaydee"
+  const currUser = "Jaydee";
   const [pins, setPins] = useState([]);
   const [currentPlaceId, setCurrentPlaceId] = useState(null);
   const [newPlace, setNewPlace] = useState(null);
@@ -16,7 +16,7 @@ function App() {
     height: "95vh",
     latitude: 37.7577,
     longitude: -122.4376,
-    zoom: 7
+    zoom: 4
   });
 
   // fetch all pins/post
@@ -24,7 +24,7 @@ function App() {
     const getPins = async () => {
       try {
         const allPins = await axios.get("/pins");
-        setPins(allPins.data) ; 
+        setPins(allPins.data);
       } catch (err) {
         console.log(err)
       }
@@ -38,27 +38,31 @@ function App() {
   }
 
   const handleAddClick = (e) => {
-    const [long, lat] = e.lngLat;
+    const [longitude, latitude] = e.lngLat;
     setNewPlace({
-      lat: lat, long: long
+      lat: latitude, long: longitude,
     });
   }
 
   return (
-    <ReactMapGL transitionDuration="200" onDblClick = {handleAddClick}
+    <div style ={{ height: "100vh", width: "100%"}}>
+    <ReactMapGL transitionDuration="200" 
       {...viewport}
       mapStyle= "mapbox://styles/ahmedjomer/ckop6c3cr22uh17p56r6n5xff"
       mapboxApiAccessToken={process.env.REACT_APP_MAPBOX}
-      onViewportChange={nextViewport => setViewport(nextViewport)}>
+      width="100%" height="100%"
+      onViewportChange={viewport => setViewport(viewport)}
+      onDblClick = {currUser && handleAddClick}>
         {pins.map((p) => (
     <>
-        <Marker latitude={p.latitude} longitude={p.longitude} offsetLeft={-20} offsetTop={-10}>
-          <Room onClick={() => handleMarkerClick(p._id, p.lat, p.long)} style ={{fontSize:viewport.zoom * 7, color: p.userName === currUser ? "black" : "orange", cursor: "pointer"}}/>
+        <Marker latitude={p.lat} longitude={p.long} offsetLeft={-3.5 * viewport.zoom} offsetTop={-7 * viewport.zoom}>
+          <Room onClick={() => handleMarkerClick(p._id, p.lat, p.long)} style ={{fontSize:viewport.zoom * 11, color: p.userName === currUser ? "black" : "orange", cursor: "pointer"}}/>
         </Marker>
         {p._id === currentPlaceId && (
         <Popup
-              latitude={p.latitude}
-              longitude={p.longitude}
+              key={p._id}
+              latitude={p.lat}
+              longitude={p.long}
               closeButton={true}
               closeOnClick={false}
               onClose={() => setCurrentPlaceId(null)}
@@ -110,9 +114,9 @@ function App() {
             </form>
           </div>
       </Popup>
-        )}
+      )}
     </ReactMapGL>
-    
+    </div>
   );
 }
 
