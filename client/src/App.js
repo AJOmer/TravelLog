@@ -4,13 +4,19 @@ import { Room, Star } from "@material-ui/icons";
 import "./App.css";
 import axios from "axios";
 import {format} from "timeago.js";
+import Register from "./components/Register";
+import Login from "./components/Login";
 
 
 function App() {
-  const currUser = "Jaydee";
+  const myStorage = window.localStorage;
+  const [currUser, setCurrUser] = useState(myStorage.getItem("user"));
   const [pins, setPins] = useState([]);
   const [currentPlaceId, setCurrentPlaceId] = useState(null);
   const [newPlace, setNewPlace] = useState(null);
+  const [title, setTitle] = useState(null);
+  const [description, setDesc] = useState(null);
+  const [rating, setRating] = useState(0);
   const [viewport, setViewport] = useState({
     width: "95vw",
     height: "95vh",
@@ -18,6 +24,9 @@ function App() {
     longitude: -122.4376,
     zoom: 4
   });
+  const [showRegister, setShowRegistration] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+
 
   // fetch all pins/post
   useEffect(() => {
@@ -42,6 +51,32 @@ function App() {
     setNewPlace({
       lat: latitude, long: longitude,
     });
+  }
+
+  const handleSubmit = async (e) => {
+    // To not refresh page on submit \\
+    e.preventDefault();
+    const newPin = {
+      userName: currUser,
+      title,
+      description,
+      rating,
+      lat: newPlace.lat,
+      long: newPlace.long,
+    }
+
+    try {
+      const res = await axios.post("/pins", newPin);
+      setPins([...pins, res.data]);
+      setNewPlace(null);
+    } catch (err) {
+      console.log(err)
+    }
+  };
+
+  const handleLogout = () => {
+    setCurrUser(null);
+    myStorage.removeItem("user");
   }
 
   return (
@@ -74,11 +109,7 @@ function App() {
                 <p className="desc">{p.description}</p>
                 <label>Rating</label>
                 <div className="star-rating">
-                  <Star className="rating-star"/>
-                  <Star className="rating-star"/>
-                  <Star className="rating-star"/>
-                  <Star className="rating-star"/>
-                  <Star className="rating-star"/>
+                  {Array(p.rating).fill(<Star className="rating-star"/>)}
                 </div>
                 <label>Information</label>
                 <span className="username">Created by <b>{p.userName}</b></span>
@@ -97,13 +128,13 @@ function App() {
         onClose={() => setNewPlace(null)}
         anchor="left" >
           <div>
-            <form>
+            <form onSubmit={handleSubmit}>
               <label>Title</label>
-              <input placeholder="Enter Name"/>
+              <input onChange={(e) => setTitle(e.target.value)} placeholder="Enter Name"/>
               <label>Review</label>
-              <textarea placeholder="Review this location"/>
+              <textarea placeholder="Review this location" onChange={(e) => setDesc(e.target.value)}/>
               <label>Rating</label>
-              <select>
+              <select onChange={(e) => setRating(e.target.value)}>
                 <option value ="1">1</option>
                 <option value ="2">2</option>
                 <option value ="3">3</option>
@@ -115,6 +146,12 @@ function App() {
           </div>
       </Popup>
       )}
+      {currUser ? (<button className="button logout" onClick={handleLogout}>Logout</button>) : (<div className="buttons">
+        <button className="button login" onClick={() => setShowLogin(true)} >Login</button>
+        <button className="button register" onClick={() => setShowRegistration(true)} >Register</button>
+      </div>)}
+      {showRegister && <Register setShowRegistration={setShowRegistration}/>}
+      {showLogin && <Login setShowLogin={setShowLogin} myStorage={myStorage} setCurrUser={setCurrUser} />}
     </ReactMapGL>
     </div>
   );

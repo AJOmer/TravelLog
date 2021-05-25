@@ -48,3 +48,31 @@ input::placeholder, textarea::placeholder{
   background-color: tomato;
   cursor: pointer;
 }
+
+.button{
+  border:none;
+  padding: 7px;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+}
+
+.logout{
+  background-color: tomato;
+  padding: 10px;
+}
+
+.login{
+  background-color: black;
+  margin-right: 8px;
+}
+
+.register{
+  background-color: gray;
+}
+
+.buttons,.logout{
+  position: absolute;
+  top: 20px;
+  right: 15px;
+}
